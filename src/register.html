@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>הוספת פעולה כספית</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .form-container { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 10px 8px rgba(0,0,0,0.2); width: 350px; }
+        h2 { text-align: center; color: #0056b3; margin-top: 0; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 1em; }
+        button { width: 100%; margin-top: 25px; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 5px; font-size: 1.2em; font-weight: bold; cursor: pointer; }
+        button:hover { background-color: #004494; }
+        .error { color: red; font-size: 0.9em; display: none; margin-top: 5px; }
+        .nav-links { display: flex; gap: 10px; margin-top: 20px; text-align: center; }
+        .nav-links a { flex: 1; text-decoration: none; color: #666; font-size: 0.9em; padding: 5px; border-radius: 4px; background: #eee; }
+        .nav-links a:hover { background: #ddd; }
+    </style>
+</head>
+<body>
+<div class="form-container">
+    <h2>רישום פעולה 📝</h2>
+
+    <form onsubmit="return submitForm(event)">
+
+        <label>תיאור (למשל: קניות בסופר):</label>
+        <input type="text" id="description" name="description" required>
+        <div id="descError" class="error">התיאור חייב להכיל לפחות 2 תווים.</div>
+
+        <label>סכום (₪):</label>
+        <input type="number" id="amount" name="amount" required>
+        <div id="amountError" class="error">הסכום חייב להיות גדול מ-0.</div>
+        <div id="amountErrorBiger" class="error">הסכום חייב להיות  קטן מ500,000</div>
+
+        <label>סוג הפעולה:</label>
+        <select name="type">
+            <option value="הוצאה">הוצאה (מינוס)</option>
+            <option value="הכנסה">הכנסה (פלוס)</option>
+        </select>
+
+        <label>הערות (לא חובה):</label>
+        <input type="text" name="notes" placeholder="לדוגמה: שולם בכרטיס אשראי ">
+
+        <button type="submit">שמור נתונים</button>
+    </form>
+
+    <div class="nav-links">
+        <a href="index.html">חזרה לבית</a>
+        <a href="admin.html" style="background:#17a2b8; color:white;">צפייה בטבלה 📊</a>
+    </div>
+</div>
+
+<script>
+    function submitForm(event) {
+        event.preventDefault();
+
+        let isValid = true;
+
+        if (document.getElementById('description').value.length < 2) {
+            document.getElementById('descError').style.display = 'block';
+            isValid = false;
+        } else {
+            document.getElementById('descError').style.display = 'none';
+        }
+
+        if (document.getElementById('amount').value <= 0) {
+            document.getElementById('amountError').style.display = 'block';
+            isValid = false;
+        }
+        else if (document.getElementById('amount').value >= 500000) {
+            document.getElementById('amountErrorBiger').style.display = 'block';
+            isValid = false;
+        }
+        else {
+            document.getElementById('amountError').style.display = 'none';
+            document.getElementById('amountErrorBiger').style.display = 'none'
+        }
+
+        if (isValid) {
+            // אוספים את הנתונים מהטופס
+            const form = event.target;
+            const formData = new URLSearchParams(new FormData(form)).toString();
+
+            // פנייה לשרת (AJAX)
+            fetch('http://localhost:8080/add', {
+                method: 'POST',
+                body: formData,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            }).then(() => {
+                // מקפיץ הודעה למשתמש
+                alert('הפעולה נשמרה בהצלחה! מעביר אותך לטבלה...');
+                // מעביר אוטומטית לעמוד הטבלה
+                window.location.href = 'admin.html';
+            }).catch(error => {
+                alert('שגיאה בשמירת הנתונים. ודא שהשרת פועל.');
+            });
+        }
+    }
+</script>
+</body>
+</html>
